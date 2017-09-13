@@ -45,3 +45,23 @@ DISABLE_BY_FILES_OPTS = [
                      'Expects a "port:path" list of strings. Used by '
                      'DisableByFilesPortsHealthcheck plugin.'),
 ]
+
+DISABLE_BY_FILES_OPTS = [
+    cfg.StrOpt('uri',
+                required=True,
+                help='LDAP URI.'),
+    cfg.IntOpt('bind-timeout',
+                default=3,
+                min=0,
+                max=8,
+                required=True,
+                help='LDAP bind timeout (sec)'),
+    cfg.StrOpt('bind-dn',
+                required=True,
+                help='DN for LDAP Bind user.'),
+    cfg.StrOpt('bind-password',
+                secret=True,
+                required=True,
+                help='Password for LDAP Bind user.'),
+
+]
