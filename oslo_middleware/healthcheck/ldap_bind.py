@@ -59,9 +59,11 @@ class LdapBindHealthcheck(pluginbase.HealthcheckBaseExtension):
         try:
             if not conn.bind():
                 raise Exception('Bind error')
-        except Exception:
+        except Exception as e:
+            details = e.message if hasattr(e, 'message') else ' '.join(e.args)
             return pluginbase.HealthcheckResult(available=False,
-                                                reason="Ldap bind failed.")
+                                                reason="Ldap bind failed.",
+                                                details=details)
         conn.unbind()
         if not conn.closed:
             LOG.warning('LdapBind healthcheck middleware'
