@@ -35,8 +35,9 @@ def _create_handler(conf):
                 return 'test'
 
             app = healthcheck.Healthcheck(dummy_application, conf)
-            req = webob.Request.blank("/healthcheck", accept='application/json',
-                                    method='GET')
+            accept = 'text/html'
+            req = webob.Request.blank("/healthcheck", accept=accept,
+                                      method='GET')
             res = req.get_response(app)
             self.send_response(res.status_code)
             for header_name, header_value in res.headerlist:

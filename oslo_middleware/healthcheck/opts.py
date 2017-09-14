@@ -46,7 +46,7 @@ DISABLE_BY_FILES_OPTS = [
                      'DisableByFilesPortsHealthcheck plugin.'),
 ]
 
-DISABLE_BY_FILES_OPTS = [
+LDAP_BIND_OPTS = [
     cfg.StrOpt('uri',
                 required=True,
                 help='LDAP URI.'),
@@ -54,7 +54,6 @@ DISABLE_BY_FILES_OPTS = [
                 default=3,
                 min=0,
                 max=8,
-                required=True,
                 help='LDAP bind timeout (sec)'),
     cfg.StrOpt('bind-dn',
                 required=True,

@@ -183,5 +183,6 @@ def list_opts_healthcheck():
     return [
         ('healthcheck', copy.deepcopy(healthcheck_opts.HEALTHCHECK_OPTS +
                                       healthcheck_opts.DISABLE_BY_FILE_OPTS +
+                                      healthcheck_opts.LDAP_BIND_OPTS +
                                       healthcheck_opts.DISABLE_BY_FILES_OPTS))
     ]

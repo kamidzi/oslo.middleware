@@ -14,6 +14,7 @@
 #    under the License.
 
 import logging
+from ldap3 import Connection
 import os
 
 from oslo_middleware.healthcheck import opts
@@ -25,9 +26,7 @@ LOG = logging.getLogger(__name__)
 class LdapBindHealthcheck(pluginbase.HealthcheckBaseExtension):
     """LdapBind healthcheck middleware plugin
 
-    This plugin checks presence of a file that is provided for a application
-    running on a certain port to report if the service is unavailable
-    or not.
+    This plugin checks ability to bind to successfully to an ldap server.
 
     Example of middleware configuration:
 
@@ -38,6 +37,9 @@ class LdapBindHealthcheck(pluginbase.HealthcheckBaseExtension):
       path = /healthcheck
       backends = ldap_bind
       # set to True to enable detailed output, False is the default
+      uri = ldap://some.host.com
+      bind_dn = CN=some,DC=user,DC=name
+      bind_password = som3s3kret
       detailed = False
     """
 
@@ -47,5 +49,23 @@ class LdapBindHealthcheck(pluginbase.HealthcheckBaseExtension):
                                      group='healthcheck')
 
     def healthcheck(self, server_port):
+        conf = self.oslo_conf.healthcheck
+        connect_args = {
+            'server': conf.uri,
+            'user': conf.bind_dn,
+            'password': conf.bind_password,
+        }
+        conn = Connection(**connect_args)
+        try:
+            if not conn.bind():
+                raise Exception('Bind error')
+        except Exception:
+            return pluginbase.HealthcheckResult(available=False,
+                                                reason="Ldap bind failed.")
+        conn.unbind()
+        if not conn.closed:
+            LOG.warning('LdapBind healthcheck middleware'
+                        ' failed to unbind cleanly. Lingering socket exists.')
+
         return pluginbase.HealthcheckResult(available=True,
-                                                reason="OK")
+                                            reason="OK")
