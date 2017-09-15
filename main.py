@@ -35,9 +35,9 @@ def _create_handler(conf):
                 return 'test'
 
             app = healthcheck.Healthcheck(dummy_application, conf)
-            accept = 'text/html'
-            req = webob.Request.blank("/healthcheck", accept=accept,
-                                      method='GET')
+            req = webob.Request.blank("/healthcheck",
+                                      method='GET',
+                                      headers=self.headers)
             res = req.get_response(app)
             self.send_response(res.status_code)
             for header_name, header_value in res.headerlist:
@@ -75,7 +75,11 @@ def main(args=None):
 
     server = create_server(conf)
     print("Serving at port: %s" % server.server_address[1])
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass 
+    server.server_close()
 
 
 if __name__ == '__main__':
