@@ -23,6 +23,10 @@ from oslo_middleware.healthcheck import pluginbase
 LOG = logging.getLogger(__name__)
 
 
+class LdapHealthcheckResult(pluginbase.HealthcheckResult):
+    pass
+
+
 class LdapBindHealthcheck(pluginbase.HealthcheckBaseExtension):
     """LdapBind healthcheck middleware plugin
 
@@ -43,6 +47,8 @@ class LdapBindHealthcheck(pluginbase.HealthcheckBaseExtension):
       detailed = False
     """
 
+    _ResultClass = LdapHealthcheckResult
+
     def __init__(self, *args, **kwargs):
         super(LdapBindHealthcheck, self).__init__(*args, **kwargs)
         self.oslo_conf.register_opts(opts.LDAP_BIND_OPTS,
@@ -61,13 +67,17 @@ class LdapBindHealthcheck(pluginbase.HealthcheckBaseExtension):
                 raise Exception('Bind error')
         except Exception as e:
             details = e.message if hasattr(e, 'message') else ' '.join(e.args)
-            return pluginbase.HealthcheckResult(available=False,
-                                                reason="Ldap bind failed.",
-                                                details=details)
+            return self._ResultClass(available=False,
+                                     reason="Ldap bind failed.",
+                                     details=details)
+
+        whoami = conn.extend.standard.who_am_i()
+        details = {'whoami': whoami}
         conn.unbind()
         if not conn.closed:
             LOG.warning('LdapBind healthcheck middleware'
                         ' failed to unbind cleanly. Lingering socket exists.')
 
-        return pluginbase.HealthcheckResult(available=True,
-                                            reason="OK")
+        return self._ResultClass(available=True,
+                                 reason="OK",
+                                 details=details)
